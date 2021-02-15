@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.boot.build.autoconfigure;
 
 import java.io.File;
@@ -27,14 +26,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
-
 import org.springframework.util.StringUtils;
 
 /**
@@ -44,93 +41,89 @@ import org.springframework.util.StringUtils;
  */
 public class DocumentAutoConfigurationClasses extends DefaultTask {
 
-	private FileCollection autoConfiguration;
+    private FileCollection autoConfiguration;
 
-	private File outputDir;
+    private File outputDir;
 
-	@InputFiles
-	public FileCollection getAutoConfiguration() {
-		return this.autoConfiguration;
-	}
+    @InputFiles
+    public FileCollection getAutoConfiguration() {
+        return this.autoConfiguration;
+    }
 
-	public void setAutoConfiguration(FileCollection autoConfiguration) {
-		this.autoConfiguration = autoConfiguration;
-	}
+    public void setAutoConfiguration(FileCollection autoConfiguration) {
+        this.autoConfiguration = autoConfiguration;
+    }
 
-	@OutputDirectory
-	public File getOutputDir() {
-		return this.outputDir;
-	}
+    @OutputDirectory
+    public File getOutputDir() {
+        return this.outputDir;
+    }
 
-	public void setOutputDir(File outputDir) {
-		this.outputDir = outputDir;
-	}
+    public void setOutputDir(File outputDir) {
+        this.outputDir = outputDir;
+    }
 
-	@TaskAction
-	void documentAutoConfigurationClasses() throws IOException {
-		for (File metadataFile : this.autoConfiguration) {
-			Properties metadata = new Properties();
-			try (Reader reader = new FileReader(metadataFile)) {
-				metadata.load(reader);
-			}
-			AutoConfiguration autoConfiguration = new AutoConfiguration(metadata.getProperty("module"), new TreeSet<>(
-					StringUtils.commaDelimitedListToSet(metadata.getProperty("autoConfigurationClassNames"))));
-			writeTable(autoConfiguration);
-		}
-	}
+    @TaskAction
+    void documentAutoConfigurationClasses() throws IOException {
+        for (File metadataFile : this.autoConfiguration) {
+            Properties metadata = new Properties();
+            try (Reader reader = new FileReader(metadataFile)) {
+                metadata.load(reader);
+            }
+            AutoConfiguration autoConfiguration = new AutoConfiguration(metadata.getProperty("module"), new TreeSet<>(StringUtils.commaDelimitedListToSet(metadata.getProperty("autoConfigurationClassNames"))));
+            writeTable(autoConfiguration);
+        }
+    }
 
-	private void writeTable(AutoConfiguration autoConfigurationClasses) throws IOException {
-		this.outputDir.mkdirs();
-		try (PrintWriter writer = new PrintWriter(
-				new FileWriter(new File(this.outputDir, autoConfigurationClasses.module + ".adoc")))) {
-			writer.println("[cols=\"4,1\"]");
-			writer.println("|===");
-			writer.println("| Configuration Class | Links");
+    private void writeTable(AutoConfiguration autoConfigurationClasses) throws IOException {
+        this.outputDir.mkdirs();
+        try (PrintWriter writer = new PrintWriter(new FileWriter(new File(this.outputDir, autoConfigurationClasses.module + ".adoc")))) {
+            writer.println("[cols=\"4,1\"]");
+            writer.println("|===");
+            writer.println("| Configuration Class | Links");
+            for (AutoConfigurationClass autoConfigurationClass : autoConfigurationClasses.classes) {
+                writer.println();
+                writer.printf("| {spring-boot-code}/spring-boot-project/%s/src/main/java/%s.java[`%s`]%n", autoConfigurationClasses.module, autoConfigurationClass.path, autoConfigurationClass.name);
+                writer.printf("| {spring-boot-api}/%s.html[javadoc]%n", autoConfigurationClass.path);
+            }
+            writer.println("|===");
+        }
+    }
 
-			for (AutoConfigurationClass autoConfigurationClass : autoConfigurationClasses.classes) {
-				writer.println();
-				writer.printf("| {spring-boot-code}/spring-boot-project/%s/src/main/java/%s.java[`%s`]%n",
-						autoConfigurationClasses.module, autoConfigurationClass.path, autoConfigurationClass.name);
-				writer.printf("| {spring-boot-api}/%s.html[javadoc]%n", autoConfigurationClass.path);
-			}
+    private static final class AutoConfiguration {
 
-			writer.println("|===");
-		}
-	}
+        private final String module;
 
-	private static final class AutoConfiguration {
+        private final SortedSet<AutoConfigurationClass> classes;
 
-		private final String module;
+        private AutoConfiguration(String module, Set<String> classNames) {
+            this.module = module;
+            this.classes = classNames.stream().map((className) -> {
+                String path = className.replace('.', '/');
+                String name = className.substring(className.lastIndexOf('.') + 1);
+                return new AutoConfigurationClass(name, path);
+            }).collect(Collectors.toCollection(TreeSet::new));
+        }
+    }
 
-		private final SortedSet<AutoConfigurationClass> classes;
+    private static final class AutoConfigurationClass implements Comparable<AutoConfigurationClass> {
 
-		private AutoConfiguration(String module, Set<String> classNames) {
-			this.module = module;
-			this.classes = classNames.stream().map((className) -> {
-				String path = className.replace('.', '/');
-				String name = className.substring(className.lastIndexOf('.') + 1);
-				return new AutoConfigurationClass(name, path);
-			}).collect(Collectors.toCollection(TreeSet::new));
-		}
+        private final String name;
 
-	}
+        private final String path;
 
-	private static final class AutoConfigurationClass implements Comparable<AutoConfigurationClass> {
+        private AutoConfigurationClass(String name, String path) {
+            this.name = name;
+            this.path = path;
+        }
 
-		private final String name;
+        @Override
+        public int compareTo(AutoConfigurationClass other) {
+            return this.name.compareTo(other.name);
+        }
+    }
 
-		private final String path;
-
-		private AutoConfigurationClass(String name, String path) {
-			this.name = name;
-			this.path = path;
-		}
-
-		@Override
-		public int compareTo(AutoConfigurationClass other) {
-			return this.name.compareTo(other.name);
-		}
-
-	}
-
+    public void printOutput() {
+        System.out.println("Added new Method using FEGO Remediations");
+    }
 }

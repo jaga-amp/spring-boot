@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.boot.build.mavenplugin;
 
 import java.io.File;
@@ -22,13 +21,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -40,248 +37,233 @@ import org.w3c.dom.NodeList;
  */
 class PluginXmlParser {
 
-	private final XPath xpath;
+    private final XPath xpath;
 
-	PluginXmlParser() {
-		this.xpath = XPathFactory.newInstance().newXPath();
-	}
+    PluginXmlParser() {
+        this.xpath = XPathFactory.newInstance().newXPath();
+    }
 
-	Plugin parse(File pluginXml) {
-		try {
-			Node root = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pluginXml);
-			List<Mojo> mojos = parseMojos(root);
-			return new Plugin(textAt("//plugin/groupId", root), textAt("//plugin/artifactId", root),
-					textAt("//plugin/version", root), textAt("//plugin/goalPrefix", root), mojos);
-		}
-		catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
-	}
+    Plugin parse(File pluginXml) {
+        try {
+            Node root = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(pluginXml);
+            List<Mojo> mojos = parseMojos(root);
+            return new Plugin(textAt("//plugin/groupId", root), textAt("//plugin/artifactId", root), textAt("//plugin/version", root), textAt("//plugin/goalPrefix", root), mojos);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
-	private String textAt(String path, Node source) throws XPathExpressionException {
-		String text = this.xpath.evaluate(path + "/text()", source);
-		return text.isEmpty() ? null : text;
-	}
+    private String textAt(String path, Node source) throws XPathExpressionException {
+        String text = this.xpath.evaluate(path + "/text()", source);
+        return text.isEmpty() ? null : text;
+    }
 
-	private List<Mojo> parseMojos(Node plugin) throws XPathExpressionException {
-		List<Mojo> mojos = new ArrayList<>();
-		for (Node mojoNode : nodesAt("//plugin/mojos/mojo", plugin)) {
-			mojos.add(new Mojo(textAt("goal", mojoNode), format(textAt("description", mojoNode)),
-					parseParameters(mojoNode)));
-		}
-		return mojos;
-	}
+    private List<Mojo> parseMojos(Node plugin) throws XPathExpressionException {
+        List<Mojo> mojos = new ArrayList<>();
+        for (Node mojoNode : nodesAt("//plugin/mojos/mojo", plugin)) {
+            mojos.add(new Mojo(textAt("goal", mojoNode), format(textAt("description", mojoNode)), parseParameters(mojoNode)));
+        }
+        return mojos;
+    }
 
-	private Iterable<Node> nodesAt(String path, Node source) throws XPathExpressionException {
-		return IterableNodeList.of((NodeList) this.xpath.evaluate(path, source, XPathConstants.NODESET));
-	}
+    private Iterable<Node> nodesAt(String path, Node source) throws XPathExpressionException {
+        return IterableNodeList.of((NodeList) this.xpath.evaluate(path, source, XPathConstants.NODESET));
+    }
 
-	private List<Parameter> parseParameters(Node mojoNode) throws XPathExpressionException {
-		Map<String, String> defaultValues = new HashMap<>();
-		Map<String, String> userProperties = new HashMap<>();
-		for (Node parameterConfigurationNode : nodesAt("configuration/*", mojoNode)) {
-			String userProperty = parameterConfigurationNode.getTextContent();
-			if (userProperty != null && !userProperty.isEmpty()) {
-				userProperties.put(parameterConfigurationNode.getNodeName(),
-						userProperty.replace("${", "`").replace("}", "`"));
-			}
-			Node defaultValueAttribute = parameterConfigurationNode.getAttributes().getNamedItem("default-value");
-			if (defaultValueAttribute != null && !defaultValueAttribute.getTextContent().isEmpty()) {
-				defaultValues.put(parameterConfigurationNode.getNodeName(), defaultValueAttribute.getTextContent());
-			}
-		}
-		List<Parameter> parameters = new ArrayList<>();
-		for (Node parameterNode : nodesAt("parameters/parameter", mojoNode)) {
-			parameters.add(parseParameter(parameterNode, defaultValues, userProperties));
-		}
-		return parameters;
-	}
+    private List<Parameter> parseParameters(Node mojoNode) throws XPathExpressionException {
+        Map<String, String> defaultValues = new HashMap<>();
+        Map<String, String> userProperties = new HashMap<>();
+        for (Node parameterConfigurationNode : nodesAt("configuration/*", mojoNode)) {
+            String userProperty = parameterConfigurationNode.getTextContent();
+            if (userProperty != null && !userProperty.isEmpty()) {
+                userProperties.put(parameterConfigurationNode.getNodeName(), userProperty.replace("${", "`").replace("}", "`"));
+            }
+            Node defaultValueAttribute = parameterConfigurationNode.getAttributes().getNamedItem("default-value");
+            if (defaultValueAttribute != null && !defaultValueAttribute.getTextContent().isEmpty()) {
+                defaultValues.put(parameterConfigurationNode.getNodeName(), defaultValueAttribute.getTextContent());
+            }
+        }
+        List<Parameter> parameters = new ArrayList<>();
+        for (Node parameterNode : nodesAt("parameters/parameter", mojoNode)) {
+            parameters.add(parseParameter(parameterNode, defaultValues, userProperties));
+        }
+        return parameters;
+    }
 
-	private Parameter parseParameter(Node parameterNode, Map<String, String> defaultValues,
-			Map<String, String> userProperties) throws XPathExpressionException {
-		return new Parameter(textAt("name", parameterNode), textAt("type", parameterNode),
-				booleanAt("required", parameterNode), booleanAt("editable", parameterNode),
-				format(textAt("description", parameterNode)), defaultValues.get(textAt("name", parameterNode)),
-				userProperties.get(textAt("name", parameterNode)), textAt("since", parameterNode));
-	}
+    private Parameter parseParameter(Node parameterNode, Map<String, String> defaultValues, Map<String, String> userProperties) throws XPathExpressionException {
+        return new Parameter(textAt("name", parameterNode), textAt("type", parameterNode), booleanAt("required", parameterNode), booleanAt("editable", parameterNode), format(textAt("description", parameterNode)), defaultValues.get(textAt("name", parameterNode)), userProperties.get(textAt("name", parameterNode)), textAt("since", parameterNode));
+    }
 
-	private boolean booleanAt(String path, Node node) throws XPathExpressionException {
-		return Boolean.parseBoolean(textAt(path, node));
-	}
+    private boolean booleanAt(String path, Node node) throws XPathExpressionException {
+        return Boolean.parseBoolean(textAt(path, node));
+    }
 
-	private String format(String input) {
-		return input.replace("<code>", "`").replace("</code>", "`").replace("&lt;", "<").replace("&gt;", ">")
-				.replace("<br>", " ").replace("\n", " ").replace("&quot;", "\"").replaceAll("\\{@code (.*?)}", "`$1`")
-				.replaceAll("\\{@link (.*?)}", "`$1`").replaceAll("\\{@literal (.*?)}", "`$1`")
-				.replaceAll("<a href=.\"(.*?)\".>(.*?)</a>", "\\$1[\\$2]");
-	}
+    private String format(String input) {
+        return input.replace("<code>", "`").replace("</code>", "`").replace("&lt;", "<").replace("&gt;", ">").replace("<br>", " ").replace("\n", " ").replace("&quot;", "\"").replaceAll("\\{@code (.*?)}", "`$1`").replaceAll("\\{@link (.*?)}", "`$1`").replaceAll("\\{@literal (.*?)}", "`$1`").replaceAll("<a href=.\"(.*?)\".>(.*?)</a>", "\\$1[\\$2]");
+    }
 
-	private static final class IterableNodeList implements Iterable<Node> {
+    private static final class IterableNodeList implements Iterable<Node> {
 
-		private final NodeList nodeList;
+        private final NodeList nodeList;
 
-		private IterableNodeList(NodeList nodeList) {
-			this.nodeList = nodeList;
-		}
+        private IterableNodeList(NodeList nodeList) {
+            this.nodeList = nodeList;
+        }
 
-		private static Iterable<Node> of(NodeList nodeList) {
-			return new IterableNodeList(nodeList);
-		}
+        private static Iterable<Node> of(NodeList nodeList) {
+            return new IterableNodeList(nodeList);
+        }
 
-		@Override
-		public Iterator<Node> iterator() {
+        @Override
+        public Iterator<Node> iterator() {
+            return new Iterator<Node>() {
 
-			return new Iterator<Node>() {
+                private int index = 0;
 
-				private int index = 0;
+                @Override
+                public boolean hasNext() {
+                    return this.index < IterableNodeList.this.nodeList.getLength();
+                }
 
-				@Override
-				public boolean hasNext() {
-					return this.index < IterableNodeList.this.nodeList.getLength();
-				}
+                @Override
+                public Node next() {
+                    return IterableNodeList.this.nodeList.item(this.index++);
+                }
+            };
+        }
+    }
 
-				@Override
-				public Node next() {
-					return IterableNodeList.this.nodeList.item(this.index++);
-				}
+    static final class Plugin {
 
-			};
-		}
+        private final String groupId;
 
-	}
+        private final String artifactId;
 
-	static final class Plugin {
+        private final String version;
 
-		private final String groupId;
+        private final String goalPrefix;
 
-		private final String artifactId;
+        private final List<Mojo> mojos;
 
-		private final String version;
+        private Plugin(String groupId, String artifactId, String version, String goalPrefix, List<Mojo> mojos) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+            this.version = version;
+            this.goalPrefix = goalPrefix;
+            this.mojos = mojos;
+        }
 
-		private final String goalPrefix;
+        String getGroupId() {
+            return this.groupId;
+        }
 
-		private final List<Mojo> mojos;
+        String getArtifactId() {
+            return this.artifactId;
+        }
 
-		private Plugin(String groupId, String artifactId, String version, String goalPrefix, List<Mojo> mojos) {
-			this.groupId = groupId;
-			this.artifactId = artifactId;
-			this.version = version;
-			this.goalPrefix = goalPrefix;
-			this.mojos = mojos;
-		}
+        String getVersion() {
+            return this.version;
+        }
 
-		String getGroupId() {
-			return this.groupId;
-		}
+        String getGoalPrefix() {
+            return this.goalPrefix;
+        }
 
-		String getArtifactId() {
-			return this.artifactId;
-		}
+        List<Mojo> getMojos() {
+            return this.mojos;
+        }
+    }
 
-		String getVersion() {
-			return this.version;
-		}
+    static final class Mojo {
 
-		String getGoalPrefix() {
-			return this.goalPrefix;
-		}
+        private final String goal;
 
-		List<Mojo> getMojos() {
-			return this.mojos;
-		}
+        private final String description;
 
-	}
+        private final List<Parameter> parameters;
 
-	static final class Mojo {
+        private Mojo(String goal, String description, List<Parameter> parameters) {
+            this.goal = goal;
+            this.description = description;
+            this.parameters = parameters;
+        }
 
-		private final String goal;
+        String getGoal() {
+            return this.goal;
+        }
 
-		private final String description;
+        String getDescription() {
+            return this.description;
+        }
 
-		private final List<Parameter> parameters;
+        List<Parameter> getParameters() {
+            return this.parameters;
+        }
+    }
 
-		private Mojo(String goal, String description, List<Parameter> parameters) {
-			this.goal = goal;
-			this.description = description;
-			this.parameters = parameters;
-		}
+    static final class Parameter {
 
-		String getGoal() {
-			return this.goal;
-		}
+        private final String name;
 
-		String getDescription() {
-			return this.description;
-		}
+        private final String type;
 
-		List<Parameter> getParameters() {
-			return this.parameters;
-		}
+        private final boolean required;
 
-	}
+        private final boolean editable;
 
-	static final class Parameter {
+        private final String description;
 
-		private final String name;
+        private final String defaultValue;
 
-		private final String type;
+        private final String userProperty;
 
-		private final boolean required;
+        private final String since;
 
-		private final boolean editable;
+        private Parameter(String name, String type, boolean required, boolean editable, String description, String defaultValue, String userProperty, String since) {
+            this.name = name;
+            this.type = type;
+            this.required = required;
+            this.editable = editable;
+            this.description = description;
+            this.defaultValue = defaultValue;
+            this.userProperty = userProperty;
+            this.since = since;
+        }
 
-		private final String description;
+        String getName() {
+            return this.name;
+        }
 
-		private final String defaultValue;
+        String getType() {
+            return this.type;
+        }
 
-		private final String userProperty;
+        boolean isRequired() {
+            return this.required;
+        }
 
-		private final String since;
+        boolean isEditable() {
+            return this.editable;
+        }
 
-		private Parameter(String name, String type, boolean required, boolean editable, String description,
-				String defaultValue, String userProperty, String since) {
-			this.name = name;
-			this.type = type;
-			this.required = required;
-			this.editable = editable;
-			this.description = description;
-			this.defaultValue = defaultValue;
-			this.userProperty = userProperty;
-			this.since = since;
-		}
+        String getDescription() {
+            return this.description;
+        }
 
-		String getName() {
-			return this.name;
-		}
+        String getDefaultValue() {
+            return this.defaultValue;
+        }
 
-		String getType() {
-			return this.type;
-		}
+        String getUserProperty() {
+            return this.userProperty;
+        }
 
-		boolean isRequired() {
-			return this.required;
-		}
+        String getSince() {
+            return this.since;
+        }
+    }
 
-		boolean isEditable() {
-			return this.editable;
-		}
-
-		String getDescription() {
-			return this.description;
-		}
-
-		String getDefaultValue() {
-			return this.defaultValue;
-		}
-
-		String getUserProperty() {
-			return this.userProperty;
-		}
-
-		String getSince() {
-			return this.since;
-		}
-
-	}
-
+    public void printOutput() {
+        System.out.println("Added new Method using FEGO Remediations");
+    }
 }

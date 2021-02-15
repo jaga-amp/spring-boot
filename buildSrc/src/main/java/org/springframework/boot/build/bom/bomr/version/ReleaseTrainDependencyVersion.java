@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.boot.build.bom.bomr.version;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.springframework.util.StringUtils;
 
 /**
@@ -28,104 +26,106 @@ import org.springframework.util.StringUtils;
  */
 final class ReleaseTrainDependencyVersion implements DependencyVersion {
 
-	private static final Pattern VERSION_PATTERN = Pattern.compile("([A-Z][a-z]+)-([A-Z]+)([0-9]*)");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("([A-Z][a-z]+)-([A-Z]+)([0-9]*)");
 
-	private final String releaseTrain;
+    private final String releaseTrain;
 
-	private final String type;
+    private final String type;
 
-	private final int version;
+    private final int version;
 
-	private final String original;
+    private final String original;
 
-	private ReleaseTrainDependencyVersion(String releaseTrain, String type, int version, String original) {
-		this.releaseTrain = releaseTrain;
-		this.type = type;
-		this.version = version;
-		this.original = original;
-	}
+    private ReleaseTrainDependencyVersion(String releaseTrain, String type, int version, String original) {
+        this.releaseTrain = releaseTrain;
+        this.type = type;
+        this.version = version;
+        this.original = original;
+    }
 
-	@Override
-	public int compareTo(DependencyVersion other) {
-		if (!(other instanceof ReleaseTrainDependencyVersion)) {
-			return -1;
-		}
-		ReleaseTrainDependencyVersion otherReleaseTrain = (ReleaseTrainDependencyVersion) other;
-		int comparison = this.releaseTrain.compareTo(otherReleaseTrain.releaseTrain);
-		if (comparison != 0) {
-			return comparison;
-		}
-		comparison = this.type.compareTo(otherReleaseTrain.type);
-		if (comparison != 0) {
-			return comparison;
-		}
-		return Integer.compare(this.version, otherReleaseTrain.version);
-	}
+    @Override
+    public int compareTo(DependencyVersion other) {
+        if (!(other instanceof ReleaseTrainDependencyVersion)) {
+            return -1;
+        }
+        ReleaseTrainDependencyVersion otherReleaseTrain = (ReleaseTrainDependencyVersion) other;
+        int comparison = this.releaseTrain.compareTo(otherReleaseTrain.releaseTrain);
+        if (comparison != 0) {
+            return comparison;
+        }
+        comparison = this.type.compareTo(otherReleaseTrain.type);
+        if (comparison != 0) {
+            return comparison;
+        }
+        return Integer.compare(this.version, otherReleaseTrain.version);
+    }
 
-	@Override
-	public boolean isNewerThan(DependencyVersion other) {
-		if (other instanceof CalendarVersionDependencyVersion) {
-			return false;
-		}
-		if (!(other instanceof ReleaseTrainDependencyVersion)) {
-			return true;
-		}
-		ReleaseTrainDependencyVersion otherReleaseTrain = (ReleaseTrainDependencyVersion) other;
-		return otherReleaseTrain.compareTo(this) < 0;
-	}
+    @Override
+    public boolean isNewerThan(DependencyVersion other) {
+        if (other instanceof CalendarVersionDependencyVersion) {
+            return false;
+        }
+        if (!(other instanceof ReleaseTrainDependencyVersion)) {
+            return true;
+        }
+        ReleaseTrainDependencyVersion otherReleaseTrain = (ReleaseTrainDependencyVersion) other;
+        return otherReleaseTrain.compareTo(this) < 0;
+    }
 
-	@Override
-	public boolean isSameMajorAndNewerThan(DependencyVersion other) {
-		return isNewerThan(other);
-	}
+    @Override
+    public boolean isSameMajorAndNewerThan(DependencyVersion other) {
+        return isNewerThan(other);
+    }
 
-	@Override
-	public boolean isSameMinorAndNewerThan(DependencyVersion other) {
-		if (other instanceof CalendarVersionDependencyVersion) {
-			return false;
-		}
-		if (!(other instanceof ReleaseTrainDependencyVersion)) {
-			return true;
-		}
-		ReleaseTrainDependencyVersion otherReleaseTrain = (ReleaseTrainDependencyVersion) other;
-		return otherReleaseTrain.releaseTrain.equals(this.releaseTrain) && isNewerThan(other);
-	}
+    @Override
+    public boolean isSameMinorAndNewerThan(DependencyVersion other) {
+        if (other instanceof CalendarVersionDependencyVersion) {
+            return false;
+        }
+        if (!(other instanceof ReleaseTrainDependencyVersion)) {
+            return true;
+        }
+        ReleaseTrainDependencyVersion otherReleaseTrain = (ReleaseTrainDependencyVersion) other;
+        return otherReleaseTrain.releaseTrain.equals(this.releaseTrain) && isNewerThan(other);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		ReleaseTrainDependencyVersion other = (ReleaseTrainDependencyVersion) obj;
-		if (!this.original.equals(other.original)) {
-			return false;
-		}
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ReleaseTrainDependencyVersion other = (ReleaseTrainDependencyVersion) obj;
+        if (!this.original.equals(other.original)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public int hashCode() {
-		return this.original.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return this.original.hashCode();
+    }
 
-	@Override
-	public String toString() {
-		return this.original;
-	}
+    @Override
+    public String toString() {
+        return this.original;
+    }
 
-	static ReleaseTrainDependencyVersion parse(String input) {
-		Matcher matcher = VERSION_PATTERN.matcher(input);
-		if (!matcher.matches()) {
-			return null;
-		}
-		return new ReleaseTrainDependencyVersion(matcher.group(1), matcher.group(2),
-				(StringUtils.hasLength(matcher.group(3))) ? Integer.parseInt(matcher.group(3)) : 0, input);
-	}
+    static ReleaseTrainDependencyVersion parse(String input) {
+        Matcher matcher = VERSION_PATTERN.matcher(input);
+        if (!matcher.matches()) {
+            return null;
+        }
+        return new ReleaseTrainDependencyVersion(matcher.group(1), matcher.group(2), (StringUtils.hasLength(matcher.group(3))) ? Integer.parseInt(matcher.group(3)) : 0, input);
+    }
 
+    public void printOutput() {
+        System.out.println("Added new Method using FEGO Remediations");
+    }
 }

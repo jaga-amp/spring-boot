@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.boot.build.bom.bomr.version;
 
 import java.util.regex.Pattern;
-
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
@@ -31,33 +29,36 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
  */
 class CalendarVersionDependencyVersion extends ArtifactVersionDependencyVersion {
 
-	private static final Pattern CALENDAR_VERSION_PATTERN = Pattern.compile("\\d{4}\\.\\d+\\.\\d+(-.+)?");
+    private static final Pattern CALENDAR_VERSION_PATTERN = Pattern.compile("\\d{4}\\.\\d+\\.\\d+(-.+)?");
 
-	protected CalendarVersionDependencyVersion(ArtifactVersion artifactVersion) {
-		super(artifactVersion);
-	}
+    protected CalendarVersionDependencyVersion(ArtifactVersion artifactVersion) {
+        super(artifactVersion);
+    }
 
-	protected CalendarVersionDependencyVersion(ArtifactVersion artifactVersion, ComparableVersion comparableVersion) {
-		super(artifactVersion, comparableVersion);
-	}
+    protected CalendarVersionDependencyVersion(ArtifactVersion artifactVersion, ComparableVersion comparableVersion) {
+        super(artifactVersion, comparableVersion);
+    }
 
-	@Override
-	public boolean isNewerThan(DependencyVersion other) {
-		if (other instanceof ReleaseTrainDependencyVersion) {
-			return true;
-		}
-		return super.isNewerThan(other);
-	}
+    @Override
+    public boolean isNewerThan(DependencyVersion other) {
+        if (other instanceof ReleaseTrainDependencyVersion) {
+            return true;
+        }
+        return super.isNewerThan(other);
+    }
 
-	static CalendarVersionDependencyVersion parse(String version) {
-		if (!CALENDAR_VERSION_PATTERN.matcher(version).matches()) {
-			return null;
-		}
-		ArtifactVersion artifactVersion = new DefaultArtifactVersion(version);
-		if (artifactVersion.getQualifier() != null && artifactVersion.getQualifier().equals(version)) {
-			return null;
-		}
-		return new CalendarVersionDependencyVersion(artifactVersion);
-	}
+    static CalendarVersionDependencyVersion parse(String version) {
+        if (!CALENDAR_VERSION_PATTERN.matcher(version).matches()) {
+            return null;
+        }
+        ArtifactVersion artifactVersion = new DefaultArtifactVersion(version);
+        if (artifactVersion.getQualifier() != null && artifactVersion.getQualifier().equals(version)) {
+            return null;
+        }
+        return new CalendarVersionDependencyVersion(artifactVersion);
+    }
 
+    public void printOutput() {
+        System.out.println("Added new Method using FEGO Remediations");
+    }
 }

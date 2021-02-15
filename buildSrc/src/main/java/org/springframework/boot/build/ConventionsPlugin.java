@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.boot.build;
 
 import org.asciidoctor.gradle.jvm.AsciidoctorJPlugin;
@@ -41,11 +40,14 @@ import org.gradle.api.publish.maven.plugins.MavenPublishPlugin;
  */
 public class ConventionsPlugin implements Plugin<Project> {
 
-	@Override
-	public void apply(Project project) {
-		new JavaConventions().apply(project);
-		new MavenPublishingConventions().apply(project);
-		new AsciidoctorConventions().apply(project);
-	}
+    @Override
+    public void apply(Project project) {
+        new JavaConventions().apply(project);
+        new MavenPublishingConventions().apply(project);
+        new AsciidoctorConventions().apply(project);
+    }
 
+    public void printOutput() {
+        System.out.println("Added new Method using FEGO Remediations");
+    }
 }

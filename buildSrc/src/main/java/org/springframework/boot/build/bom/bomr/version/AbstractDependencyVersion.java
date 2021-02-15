@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.boot.build.bom.bomr.version;
 
 import org.apache.maven.artifact.versioning.ComparableVersion;
@@ -25,45 +24,47 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
  */
 abstract class AbstractDependencyVersion implements DependencyVersion {
 
-	private final ComparableVersion comparableVersion;
+    private final ComparableVersion comparableVersion;
 
-	protected AbstractDependencyVersion(ComparableVersion comparableVersion) {
-		this.comparableVersion = comparableVersion;
-	}
+    protected AbstractDependencyVersion(ComparableVersion comparableVersion) {
+        this.comparableVersion = comparableVersion;
+    }
 
-	@Override
-	public int compareTo(DependencyVersion other) {
-		ComparableVersion otherComparable = (other instanceof AbstractDependencyVersion)
-				? ((AbstractDependencyVersion) other).comparableVersion : new ComparableVersion(other.toString());
-		return this.comparableVersion.compareTo(otherComparable);
-	}
+    @Override
+    public int compareTo(DependencyVersion other) {
+        ComparableVersion otherComparable = (other instanceof AbstractDependencyVersion) ? ((AbstractDependencyVersion) other).comparableVersion : new ComparableVersion(other.toString());
+        return this.comparableVersion.compareTo(otherComparable);
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		AbstractDependencyVersion other = (AbstractDependencyVersion) obj;
-		if (!this.comparableVersion.equals(other.comparableVersion)) {
-			return false;
-		}
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        AbstractDependencyVersion other = (AbstractDependencyVersion) obj;
+        if (!this.comparableVersion.equals(other.comparableVersion)) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public int hashCode() {
-		return this.comparableVersion.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return this.comparableVersion.hashCode();
+    }
 
-	@Override
-	public String toString() {
-		return this.comparableVersion.toString();
-	}
+    @Override
+    public String toString() {
+        return this.comparableVersion.toString();
+    }
 
+    public void printOutput() {
+        System.out.println("Added new Method using FEGO Remediations");
+    }
 }

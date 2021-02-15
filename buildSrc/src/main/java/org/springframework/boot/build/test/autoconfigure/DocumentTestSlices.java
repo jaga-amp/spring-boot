@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.boot.build.test.autoconfigure;
 
 import java.io.File;
@@ -28,7 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
@@ -37,7 +35,6 @@ import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
-
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
@@ -48,85 +45,86 @@ import org.springframework.util.StringUtils;
  */
 public class DocumentTestSlices extends DefaultTask {
 
-	private FileCollection testSlices;
+    private FileCollection testSlices;
 
-	private File outputFile;
+    private File outputFile;
 
-	@InputFiles
-	@PathSensitive(PathSensitivity.RELATIVE)
-	public FileCollection getTestSlices() {
-		return this.testSlices;
-	}
+    @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    public FileCollection getTestSlices() {
+        return this.testSlices;
+    }
 
-	public void setTestSlices(FileCollection testSlices) {
-		this.testSlices = testSlices;
-	}
+    public void setTestSlices(FileCollection testSlices) {
+        this.testSlices = testSlices;
+    }
 
-	@OutputFile
-	public File getOutputFile() {
-		return this.outputFile;
-	}
+    @OutputFile
+    public File getOutputFile() {
+        return this.outputFile;
+    }
 
-	public void setOutputFile(File outputFile) {
-		this.outputFile = outputFile;
-	}
+    public void setOutputFile(File outputFile) {
+        this.outputFile = outputFile;
+    }
 
-	@TaskAction
-	void documentTestSlices() throws IOException {
-		Set<TestSlice> testSlices = readTestSlices();
-		writeTable(testSlices);
-	}
+    @TaskAction
+    void documentTestSlices() throws IOException {
+        Set<TestSlice> testSlices = readTestSlices();
+        writeTable(testSlices);
+    }
 
-	@SuppressWarnings("unchecked")
-	private Set<TestSlice> readTestSlices() throws IOException {
-		Set<TestSlice> testSlices = new TreeSet<>();
-		for (File metadataFile : this.testSlices) {
-			Properties metadata = new Properties();
-			try (Reader reader = new FileReader(metadataFile)) {
-				metadata.load(reader);
-			}
-			for (String name : Collections.list((Enumeration<String>) metadata.propertyNames())) {
-				testSlices.add(new TestSlice(name,
-						new TreeSet<>(StringUtils.commaDelimitedListToSet(metadata.getProperty(name)))));
-			}
-		}
-		return testSlices;
-	}
+    @SuppressWarnings("unchecked")
+    private Set<TestSlice> readTestSlices() throws IOException {
+        Set<TestSlice> testSlices = new TreeSet<>();
+        for (File metadataFile : this.testSlices) {
+            Properties metadata = new Properties();
+            try (Reader reader = new FileReader(metadataFile)) {
+                metadata.load(reader);
+            }
+            for (String name : Collections.list((Enumeration<String>) metadata.propertyNames())) {
+                testSlices.add(new TestSlice(name, new TreeSet<>(StringUtils.commaDelimitedListToSet(metadata.getProperty(name)))));
+            }
+        }
+        return testSlices;
+    }
 
-	private void writeTable(Set<TestSlice> testSlices) throws IOException {
-		this.outputFile.getParentFile().mkdirs();
-		try (PrintWriter writer = new PrintWriter(new FileWriter(this.outputFile))) {
-			writer.println("[cols=\"d,a\"]");
-			writer.println("|===");
-			writer.println("| Test slice | Imported auto-configuration");
-			for (TestSlice testSlice : testSlices) {
-				writer.println();
-				writer.printf("| `@%s`%n", testSlice.className);
-				writer.println("| ");
-				for (String importedAutoConfiguration : testSlice.importedAutoConfigurations) {
-					writer.printf("`%s`%n", importedAutoConfiguration);
-				}
-			}
-			writer.println("|===");
-		}
-	}
+    private void writeTable(Set<TestSlice> testSlices) throws IOException {
+        this.outputFile.getParentFile().mkdirs();
+        try (PrintWriter writer = new PrintWriter(new FileWriter(this.outputFile))) {
+            writer.println("[cols=\"d,a\"]");
+            writer.println("|===");
+            writer.println("| Test slice | Imported auto-configuration");
+            for (TestSlice testSlice : testSlices) {
+                writer.println();
+                writer.printf("| `@%s`%n", testSlice.className);
+                writer.println("| ");
+                for (String importedAutoConfiguration : testSlice.importedAutoConfigurations) {
+                    writer.printf("`%s`%n", importedAutoConfiguration);
+                }
+            }
+            writer.println("|===");
+        }
+    }
 
-	private static final class TestSlice implements Comparable<TestSlice> {
+    private static final class TestSlice implements Comparable<TestSlice> {
 
-		private final String className;
+        private final String className;
 
-		private final SortedSet<String> importedAutoConfigurations;
+        private final SortedSet<String> importedAutoConfigurations;
 
-		private TestSlice(String className, SortedSet<String> importedAutoConfigurations) {
-			this.className = ClassUtils.getShortName(className);
-			this.importedAutoConfigurations = importedAutoConfigurations;
-		}
+        private TestSlice(String className, SortedSet<String> importedAutoConfigurations) {
+            this.className = ClassUtils.getShortName(className);
+            this.importedAutoConfigurations = importedAutoConfigurations;
+        }
 
-		@Override
-		public int compareTo(TestSlice other) {
-			return this.className.compareTo(other.className);
-		}
+        @Override
+        public int compareTo(TestSlice other) {
+            return this.className.compareTo(other.className);
+        }
+    }
 
-	}
-
+    public void printOutput() {
+        System.out.println("Added new Method using FEGO Remediations");
+    }
 }
